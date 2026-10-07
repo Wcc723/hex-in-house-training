@@ -1,0 +1,222 @@
+@import "tailwindcss";
+@import "./theme.css";
+
+@layer base {
+  html,
+  body,
+  #root {
+    width: 100%;
+    height: 100%;
+  }
+
+  body {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    font-family: var(--font-sans);
+    /*
+     * 只允許合成粗體，不允許合成斜體。
+     * 中文圓體 Huninn 只有 400 一個字重，`font-none` 的話標題裡的中文會停在細的那一階，
+     * 跟旁邊 Fredoka 600 的英文數字粗細對不上。合成粗體對圓體的筆畫影響很小。
+     */
+    font-synthesis: weight;
+    text-rendering: geometricPrecision;
+    /*
+     * 刻意「沒有」-webkit-font-smoothing: antialiased：
+     * 那是「淺字壓深底」的補償，深字壓淺底時會把中文筆畫削細。
+     */
+  }
+
+  ::selection {
+    background: var(--color-amber-pop);
+    color: var(--color-paper);
+  }
+
+  :focus-visible {
+    /* 全鍵盤操作簡報時唯一的焦點提示。blue 對四個表面都 ≥5.43:1 */
+    outline: 3px solid var(--color-blue);
+    outline-offset: 3px;
+  }
+
+  pre {
+    tab-size: 2;
+  }
+
+  code,
+  kbd {
+    font-family: var(--font-mono);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-soft) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background: var(--color-line-soft);
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+/* ── 貼紙風的共用小工具 ─────────────────────────────────── */
+
+/* 奶油紙上的淡點陣，像方格筆記本。底色仍是 ink，稽核量的是 background-color */
+@utility bg-dots {
+  background-color: var(--color-ink);
+  background-image: radial-gradient(
+    circle,
+    var(--color-line-soft) 2.2px,
+    transparent 2.6px
+  );
+  background-size: 36px 36px;
+  background-position: 18px 18px;
+}
+
+/*
+ * 可以「按下去」的按鈕：平常浮著一層硬邊陰影，hover 再浮高一點，
+ * 按下時陰影歸零、本體往陰影的方向沉下去。
+ */
+@utility pressable {
+  box-shadow: var(--shadow-pop-sm);
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    background-color 120ms ease;
+
+  &:hover:not(:disabled) {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 0 var(--color-line);
+  }
+
+  &:active:not(:disabled) {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 0 var(--color-line);
+  }
+}
+
+/*
+ * 六角形裁切（平頂，對應六角學院 logo 的方向）。
+ * 用 clip-path 而不是 SVG：文字的祖先元素要有真的 background-color，
+ * 稽核腳本才量得到「白字壓在桃紅六角形上」，不然它會拿卡片底色去比。
+ */
+@utility clip-hex {
+  clip-path: polygon(25% 3%, 75% 3%, 99% 50%, 75% 97%, 25% 97%, 1% 50%);
+}
+
+/* 跟著 clip-path 形狀走的硬邊陰影。clip-path 會裁掉自己的 box-shadow，所以掛在外層用 filter */
+@utility hex-shadow {
+  filter: drop-shadow(3px 3px 0 var(--color-line));
+}
+
+/* 螢光筆畫線：只畫在字的下半部，換行時每一行各自一段 */
+@utility marker {
+  background-image: linear-gradient(
+    transparent 58%,
+    var(--color-amber-pop) 58%,
+    var(--color-amber-pop) 90%,
+    transparent 90%
+  );
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding-inline: 0.08em;
+}
+
+@layer components {
+  /*
+   * 翻頁進場動畫：往上彈一下再落定。
+   * 刻意用 CSS 而非 JS：元素的基準狀態就是可見的，動畫只是加分，
+   * 即使動畫被停用或瀏覽器節流，內容也一定看得到。
+   */
+  @keyframes slide-enter {
+    from {
+      opacity: 0;
+      transform: translateY(22px) scale(0.985);
+    }
+    60% {
+      opacity: 1;
+      transform: translateY(-4px) scale(1.003);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .slide-enter {
+    animation: slide-enter 420ms cubic-bezier(0.34, 1.4, 0.64, 1);
+  }
+
+  /* 封面上的小星星與主視覺：慢慢上下飄 */
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0) rotate(var(--float-rotate, 0deg));
+    }
+    50% {
+      transform: translateY(-12px) rotate(var(--float-rotate, 0deg));
+    }
+  }
+
+  .float {
+    animation: float 4.5s ease-in-out infinite;
+  }
+
+  .float-slow {
+    animation: float 6.5s ease-in-out infinite;
+  }
+
+  /* 貼紙 hover 時抖一下 */
+  @keyframes wiggle {
+    0%,
+    100% {
+      transform: rotate(0deg);
+    }
+    25% {
+      transform: rotate(-4deg);
+    }
+    75% {
+      transform: rotate(4deg);
+    }
+  }
+
+  .wiggle-on-hover:hover {
+    animation: wiggle 360ms ease-in-out;
+  }
+
+  /* 目前頁的進度點：輕輕彈一下 */
+  @keyframes bounce-in {
+    from {
+      transform: scale(0.6);
+    }
+    60% {
+      transform: scale(1.15);
+    }
+    to {
+      transform: scale(1);
+    }
+  }
+
+  .bounce-in {
+    animation: bounce-in 360ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slide-enter,
+    .float,
+    .float-slow,
+    .wiggle-on-hover:hover,
+    .bounce-in {
+      animation: none;
+    }
+  }
+}

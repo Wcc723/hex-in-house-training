@@ -1,0 +1,135 @@
+/**
+ * 專案色票（Playground —— 奶油底 + 貼紙風）
+ *
+ * 六角學院內部教育訓練用的趣味主題：奶油色的紙面、墨紫色的粗描邊、
+ * 硬邊位移陰影（不暈開），再配一組糖果色的「pop」填色。
+ * 看起來像把貼紙貼在筆記本上，而不是一份正經的技術文件。
+ *
+ * 這是「取代」而不是「可切換」——沒有 data-theme、沒有 prefers-color-scheme，
+ * 全站只有這一套值。上一版（technical-editorial light）的完整值在
+ * `_backup/2026-10-06-before-playful.tar.gz` 裡，要換回去就是把那份 theme.css 蓋回來。
+ *
+ * 三組色票的分工：
+ * - UI 色票（ink / panel / paper / acid / coral / teal / blue …）：介面、文字、圖解
+ * - pop 色票（acid-pop / coral-pop …）：每支強調色的「糖果版」，只當實心填色用，
+ *   上面一律壓 paper 文字（≥8:1），**不要拿 pop 色當文字色**（對紙面只有 1.2–1.6:1）
+ * - 素材色票（icon-*）：貼紙素材生圖時指定的色值，僅供對照與之後補圖時寫 prompt
+ *
+ * ⚠ 強調色的 token 名稱是「角色」不是「色相」。acid 是桃紅、lime 是草綠，
+ *   名字沿用早期深色時代是為了不動 `Accent` 型別與各 deck 的既有寫法。
+ *   選色時請看註解寫的用途，不要照名字猜顏色。
+ */
+/*
+ * 用 `static` 是必要的：Tailwind v4 預設只輸出「有被 utility 用到」的變數，
+ * 但這裡的 token 也會被 SVG 圖解以 var(--color-*) 直接引用、被色票頁即時讀取，
+ * 沒有 static 的話那些變數不會出現在產出的 CSS 裡。
+ */
+@theme static {
+  /* ── 基底 ─────────────────────────────────────────
+     panel 最亮（純白，像貼紙本身），ink 是奶油色的紙，ink-soft 再深一階。
+     ⚠ panel-lift 只能疊在 panel 上當 hover，疊在 ink 上幾乎看不出差別。 */
+  --color-ink: #fff6e3; /* 舞台與頁面底色（奶油紙） */
+  --color-ink-soft: #fdefcf; /* 下沉：程式碼井、圖解節點 fill、表頭以外的次要底 */
+  --color-panel: #ffffff; /* 卡片、面板 —— 最亮的表面 */
+  --color-panel-lift: #fff3d6; /* hover／選取中的淺底，只疊在 panel 上 */
+  --color-line: #231f3a; /* 主要描邊 —— 貼紙風的粗黑框，也是硬邊陰影的顏色 */
+  --color-line-soft: #e6d6b4; /* 次要分隔線、背景點陣（對 panel 1.43:1） */
+  --color-letterbox: #fff6e3; /* 投影舞台外的 letterbox，跟 ink 同值讓邊界隱形。
+                                 token 仍跟 ink 分開：哪天要在全黑教室把外框壓深，
+                                 改這一行就好，不會動到頁面底色。 */
+
+  /* ── 前景 ──────────────────────────────────────
+     對 panel 15.81 / 9.14 / 7.11:1，對最深的 ink-soft 也有 13.87 / 8.02 / 6.23。
+     投影與直播壓縮會再吃掉一些對比，不要降低這個差距。 */
+  --color-paper: #231f3a; /* 主要文字（墨紫，不用純黑） */
+  --color-muted: #4a4463; /* 次要文字 */
+  --color-faint: #5a5474; /* 標籤、行號、表頭、極次要文字 */
+  --color-on-accent: #ffffff; /* 實心強調色色塊上的挖空文字，對九支強調色 5.63–6.19:1 */
+
+  /* ── 強調色（主色系）───────────────────────────
+     比上一版的油墨色更飽和，但全部壓在「對四個表面都 ≥4.94:1」的範圍內，
+     所以可以直接當文字色，也可以當實心色塊配白字。
+     ⚠ 一頁最多兩個強調色（pop 填色不算在內）。 */
+  --color-acid: #c21d68; /* 桃紅。主強調：當前步驟、CTA、focus 以外的選取狀態 */
+  --color-coral: #b23d0c; /* 橘紅。對比強調：問題、舊做法、警示 */
+  --color-teal: #0a7166; /* 薄荷深綠。正向：成功、資料流、連線 */
+  --color-blue: #2f54d9; /* 寶藍。資訊：說明、次要標記、表格連結 */
+
+  /* ── 延伸色（圖解需要更多可辨識色時使用）──────── */
+  --color-lime: #26732a; /* 草綠。執行、命令、輸出 */
+  --color-sky: #1567b3; /* 天藍。型別、選擇器 */
+  --color-violet: #7a3fe0; /* 葡萄紫。類別、元件 */
+  --color-amber: #8f5300; /* 焦糖。過渡、等待中 */
+  --color-danger: #c42b2b; /* 番茄紅。錯誤、破壞性操作 */
+
+  /* ── pop 填色（每支強調色的糖果版）───────────────
+     只當不透明的實心填色：卡片底、徽章、貼紙標籤、表頭、進度點。
+     上面壓 paper 文字是 8.1–11.1:1、壓 muted 也有 ≥5.0:1。
+     它們是不透明色，不受「低透明度填色不得單獨承擔語意」限制，
+     但 pop 底的卡片仍然會配一個實心強調色的號碼徽章當第二訊號。 */
+  --color-acid-pop: #ffb3d1; /* 泡泡糖粉 */
+  --color-coral-pop: #ffc078; /* 橘子汽水 */
+  --color-teal-pop: #96f2d7; /* 薄荷 */
+  --color-blue-pop: #bac8ff; /* 長春花藍 */
+  --color-lime-pop: #c0eb75; /* 萊姆 */
+  --color-sky-pop: #a5d8ff; /* 晴空藍 */
+  --color-violet-pop: #d0bfff; /* 薰衣草 */
+  --color-amber-pop: #ffe066; /* 檸檬黃 —— 也是螢光筆標記與貼紙標籤的預設色 */
+  --color-danger-pop: #ffc9c9; /* 草莓牛奶 —— 錯誤、被擋下來。跟 coral-pop 分開，「警示」與「失敗」才分得出來 */
+
+  /* ── 語意色（var() 別名，改上面的強調色就會跟著走）── */
+  --color-ok: var(--color-teal);
+  --color-warn: var(--color-amber); /* 不指向 acid：acid 已經是 CTA，共用會失去語意 */
+  --color-error: var(--color-danger);
+  --color-info: var(--color-blue);
+
+  /* ── 教學角色色（前後端 / 資料流圖解共用）──────── */
+  --color-role-user: var(--color-coral); /* 使用者、操作端 */
+  --color-role-client: var(--color-blue); /* 前端、瀏覽器 */
+  --color-role-server: var(--color-acid); /* 後端、API */
+  --color-role-data: var(--color-teal); /* 狀態、資料庫 */
+
+  /* ── 程式語言色（CodeTabs 標籤點）──────────────
+     ⚠ 小圓點只靠顏色分辨，新增語言時不要挑到相鄰色相。 */
+  --color-lang-html: var(--color-coral);
+  --color-lang-css: var(--color-blue);
+  --color-lang-javascript: var(--color-acid);
+  --color-lang-typescript: var(--color-sky);
+  --color-lang-jsx: var(--color-teal);
+  --color-lang-tsx: var(--color-violet);
+
+  /* ── 素材色票（貼紙素材生圖時指定的色，僅供對照）────
+     12 個素材與封面吉祥物都是 Codex Image 產的點陣貼紙（見 src/assets/manifest.ts），
+     prompt 裡指定的就是這幾支。圖是點陣、CSS 構不到，這裡的值只是「補新圖時要照抄的色」，
+     改了不會讓既有的圖跟著變。 */
+  --color-icon-outline: #24203a; /* 主描邊 */
+  --color-icon-border: #ffffff; /* 貼紙外圍的白邊 */
+  --color-icon-yellow: #ffd43b;
+  --color-icon-pink: #ff8fb8;
+  --color-icon-sky: #74c0fc;
+  --color-icon-lilac: #b197fc;
+  --color-icon-tangerine: #ff922b;
+  --color-icon-mint: #63e6be;
+
+  /* ── 硬邊位移陰影（貼紙風的招牌）───────────────
+     不暈開、不透明，顏色就是描邊色。數字越大「浮」得越高：
+     sm 給按鈕與小標籤、pop 給卡片與面板、lg 給封面的主視覺。 */
+  --shadow-pop-sm: 3px 3px 0 0 var(--color-line);
+  --shadow-pop: 6px 6px 0 0 var(--color-line);
+  --shadow-pop-lg: 10px 10px 0 0 var(--color-line);
+
+  /* ── 字體 ───────────────────────────────────────
+     Fredoka / Nunito 是圓體拉丁字、Huninn（jf 粉圓）是圓體中文，
+     從 Google Fonts 載入（見 index.html）。離線時退回系統的蘋方，版面不會跑掉。 */
+  --font-sans: "Nunito", "Huninn", "PingFang TC", "Noto Sans TC", system-ui,
+    sans-serif;
+  --font-display: "Fredoka", "Huninn", "PingFang TC", "Noto Sans TC", sans-serif;
+  --font-mono: "SF Mono", "JetBrains Mono", "Fira Code", Menlo, Monaco, Consolas,
+    monospace;
+}
+
+/* 舞台基準尺寸：所有版面都以這組座標撰寫，再等比縮放到視窗 */
+:root {
+  --stage-width: 1920;
+  --stage-height: 1080;
+}
