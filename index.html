@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/hex-in-house-training/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#fff6e3" />
+    <title>六角學院內部教育訓練簡報</title>
+    <!--
+      圓體字：Fredoka（標題拉丁字）、Nunito（內文拉丁字）、Huninn（jf 粉圓，中文）。
+      Google Fonts 會依 unicode-range 切片，只下載頁面上用到的中文字。
+      離線時退回系統的蘋方，版面不會跑掉，只是少了圓體的味道。
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400..700&family=Huninn&family=Nunito:wght@400..800&display=swap"
+    />
+    <style>
+      /*
+       * 避免載入時閃深色。這三處（color-scheme、theme-color、下面這行）
+       * 活在 React 樹與 Tailwind build 之外，任何 token 層級的搜尋都掃不到，
+       * 改色票時最容易漏。值要跟 theme.css 的 --color-ink 一致。
+       */
+      html { background: #fff6e3; }
+    </style>
+    <script type="module" crossorigin src="/hex-in-house-training/assets/index-BT6kFo26.js"></script>
+    <link rel="stylesheet" crossorigin href="/hex-in-house-training/assets/index-_4E7z90o.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
